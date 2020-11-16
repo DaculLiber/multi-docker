@@ -1,3 +1,4 @@
+language: none
 sudo: required
 services:
   - docker
@@ -13,3 +14,28 @@ after_success:
   - docker built -t dacul/multi-nginx ./nginx
   - docker build -t dacul/multi-server ./server
   - docker build -t dacul/multi-worker ./worker
+
+  - docker build -t dacul/multi-nginx ./nginx
+  - docker build -t dacul/multi-server ./server
+  - docker build -t dacul/multi-worker ./worker
+  # Log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin 
+  # Take those images to docker hub
+  - docker push dacul/multi-client
+  - docker push dacul/multi-nginx
+  - docker push dacul/multi-server
+  - docker push dacul/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: eu-central-1
+  app: multi-docker
+  env: MultiDocker-env
+  bucket_name: elasticbeanstalk-eu-central-1-401545621718
+  bucket_path: multi-docker
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    -secure: $AWS_SECRET_KEY
+
